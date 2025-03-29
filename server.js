@@ -106,5 +106,7 @@ app.post('/addUser', (req, res) => {
 });
 
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running on http://192.168.1.4:${PORT}`));
+const port = process.env.PORT || 4000;
+app.listen(port, () => {
+  console.log(`server app listening on port ${port}`)
+})
