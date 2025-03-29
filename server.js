@@ -105,6 +105,21 @@ app.post('/addUser', (req, res) => {
     });
 });
 
+app.get('/getjobstatus', (req, res) => {
+
+    fs.readFile(path.join(__dirname, 'aboutjobs.json'), 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error reading jobs.json:", err);
+            return res.status(500).send({ message: "Internal Server Error" });
+        }
+
+        // Parse JSON
+        const aboutjobs = JSON.parse(data);
+        res.json(aboutjobs);
+    });
+});
+
+
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
