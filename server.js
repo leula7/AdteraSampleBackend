@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios'); 
 
 app.use(cors()); // Enable CORS if accessing from frontend
 app.use(express.static(__dirname)); // Serves static files from the backend folder
