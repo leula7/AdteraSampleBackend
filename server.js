@@ -131,6 +131,10 @@ app.get('/getjobstatus', (req, res) => {
 const CHAPA_SECRET_KEY = 'CHASECK_TEST-9C94Wuyk1obkcmP9W4jfu3nmgsFbwknk'; // Replace with your actual key
 
 app.post('/api/initiate-payment', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins (or specify your frontend URL)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
   try {
     const { amount, description, email, phone } = req.body;
     
@@ -150,13 +154,16 @@ app.post('/api/initiate-payment', async (req, res) => {
         "customization[description]": description,
         "meta[hide_receipt]": "true"
       },
-      { headers: { Authorization: `Bearer ${CHAPA_SECRET_KEY}` } }
+      { 
+        headers: { Authorization: `Bearer ${CHAPA_SECRET_KEY}` } 
+      }
     );
-    console.log(chapaResponse.data); // Debugging output
 
+    console.log(chapaResponse.data);
     res.json(chapaResponse.data);
   } catch (error) {
-    res.status(500).json({ message: 'Payment failed', error: error.response.data });
+    console.error(error.response ? error.response.data : error.message);
+    res.status(500).json({ message: 'Payment failed', error: error.response?.data || error.message });
   }
 });
 
