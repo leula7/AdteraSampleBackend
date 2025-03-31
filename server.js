@@ -119,7 +119,37 @@ app.get('/getjobstatus', (req, res) => {
     });
 });
 
+const CHAPA_SECRET_KEY = 'CHASECK_TEST-9C94Wuyk1obkcmP9W4jfu3nmgsFbwknk'; // Replace with your actual key
 
+app.post('/api/initiate-payment', async (req, res) => {
+  try {
+    const { amount, description, email, phone } = req.body;
+    
+    const chapaResponse = await axios.post(
+      'https://api.chapa.co/v1/transaction/initialize',
+      {
+        amount: amount.toString(),
+        currency: 'ETB',
+        email: email,
+        first_name: 'User',
+        last_name: 'Test',
+        phone_number: phone,
+        tx_ref: `chapa-${Date.now()}`,
+        callback_url: 'https://yourserver.com/payment-callback',
+        return_url: 'https://yourapp.com/payment-success',
+        "customization[title]": "Payment for Connects",
+        "customization[description]": description,
+        "meta[hide_receipt]": "true"
+      },
+      { headers: { Authorization: `Bearer ${CHAPA_SECRET_KEY}` } }
+    );
+    console.log(chapaResponse.data); // Debugging output
+
+    res.json(chapaResponse.data);
+  } catch (error) {
+    res.status(500).json({ message: 'Payment failed', error: error.response.data });
+  }
+});
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
