@@ -3,6 +3,14 @@ const app = express();
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
+
+app.use(cors({
+    origin: '*', // Allow all origins (for testing only)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 
 
 app.use(cors()); // Enable CORS if accessing from frontend
