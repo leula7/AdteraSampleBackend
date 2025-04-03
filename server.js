@@ -168,6 +168,23 @@ app.post('/api/initiate-payment', async (req, res) => {
   }
 });
 
+app.get('/chapa-redirect', (req, res) => {
+    console.log("Chapa request received");
+
+    try {
+        const status = req.query.status;
+          if (status === 'success') {
+            res.redirect('adtera://payment-success');
+          } else {
+            res.redirect('adtera://payment-failed');
+          }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`server app listening on port ${port}`)
