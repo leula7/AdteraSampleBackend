@@ -6,7 +6,7 @@
             "password": "admin",
             "name": "John Doe",
             "age": 25,
-            "type": "influencer"
+            "type": "admin"
         },
         {
             "id": 2,
