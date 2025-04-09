@@ -9,6 +9,14 @@
             "type": "admin"
         },
         {
+            "id": 13,
+            "username": "admin2",
+            "password": "admin2",
+            "name": "John Doe",
+            "age": 25,
+            "type": "admin"
+        },
+        {
             "id": 2,
             "username": "user2",
             "password": "password2",
