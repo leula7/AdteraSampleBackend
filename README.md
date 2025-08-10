@@ -1,2 +1,0 @@
-# AdteraSampleBackend
-sample backend

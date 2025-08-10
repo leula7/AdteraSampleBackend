@@ -1,191 +1,55 @@
-const express = require('express');
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import authRoutes from './routes/authRoutes.js';
+
 const app = express();
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
+const server = http.createServer(app);
 
-
-app.use(cors({
-    origin: '*', // Allow all origins (for testing only)
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-
-
-app.use(cors()); // Enable CORS if accessing from frontend
-app.use(express.static(__dirname)); // Serves static files from the backend folder
-app.use(express.json()); // Add this middleware for parsing JSON body
-
-app.get('/users', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Users.json')); // No extra 'backend' here
-});
-
-
-app.get('/jobs/:user_id', (req, res) => {
-    console.log("Jobs request received");
-
-    try {
-        const userId = req.params.user_id;
-
-        // Read the JSON file
-        fs.readFile(path.join(__dirname, 'jobs.json'), 'utf8', (err, data) => {
-            if (err) {
-                console.error("Error reading jobs.json:", err);
-                return res.status(500).send({ message: "Internal Server Error" });
-            }
-
-            // Parse JSON
-            const jobs = JSON.parse(data);
-
-            // Filter jobs by user_id
-            const filteredJobs = jobs.filter(job => job.user_id == userId);
-
-            console.log(filteredJobs); // Debugging output
-
-            // Send filtered jobs as response
-            res.json(filteredJobs);
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "Internal Server Error" });
-    }
-});
-
-app.get('/jobs', (req, res) => {
-    console.log("Jobs request received");
-
-    try {
-        const userId = req.params.user_id;
-
-        // Read the JSON file
-        fs.readFile(path.join(__dirname, 'jobs.json'), 'utf8', (err, data) => {
-            if (err) {
-                console.error("Error reading jobs.json:", err);
-                return res.status(500).send({ message: "Internal Server Error" });
-            }
-
-            // Parse JSON
-            const jobs = JSON.parse(data);
-            res.json(jobs);
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "Internal Server Error" });
-    }
-});
-
-app.post('/addUser', (req, res) => {
-    console.log("Add User request received");
-    
-    const { firstName, lastName, age, type } = req.body;
-    if (!firstName || !lastName || !age || !type) {
-        return res.status(400).send({ message: "Missing required fields" });
-    }
-
-    const newUser = { firstName, lastName, age, type };
-
-    fs.readFile(path.join(__dirname, 'users.json'), 'utf8', (err, data) => {
-        if (err) {
-            console.error("Error reading users.json:", err);
-            return res.status(500).send({ message: "Internal Server Error" });
-        }
-
-        let users = [];
-        try {
-            users = JSON.parse(data);
-        } catch (error) {
-            console.error("Error parsing JSON:", error);
-            return res.status(500).send({ message: "Invalid JSON format" });
-        }
-
-        users.push(newUser);
-
-        fs.writeFile(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2), 'utf8', (err) => {
-            if (err) {
-                console.error("Error writing to users.json:", err);
-                return res.status(500).send({ message: "Failed to save user" });
-            }
-
-            res.status(201).send({ message: "User added successfully", user: newUser });
-        });
-    });
-});
-
-app.get('/getjobstatus', (req, res) => {
-
-    fs.readFile(path.join(__dirname, 'aboutjobs.json'), 'utf8', (err, data) => {
-        if (err) {
-            console.error("Error reading jobs.json:", err);
-            return res.status(500).send({ message: "Internal Server Error" });
-        }
-
-        // Parse JSON
-        const aboutjobs = JSON.parse(data);
-        res.json(aboutjobs);
-    });
-});
-
-const CHAPA_SECRET_KEY = 'CHASECK_TEST-9C94Wuyk1obkcmP9W4jfu3nmgsFbwknk'; // Replace with your actual key
-
-app.post('/api/initiate-payment', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins (or specify your frontend URL)
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  try {
-    const { amount, description, email, phone } = req.body;
-    
-    const chapaResponse = await axios.post(
-      'https://api.chapa.co/v1/transaction/initialize',
-      {
-        amount: amount.toString(),
-        currency: 'ETB',
-        email: email,
-        first_name: 'User',
-        last_name: 'Test',
-        phone_number: phone,
-        tx_ref: `chapa-${Date.now()}`,
-        callback_url: 'https://yourserver.com/payment-callback',
-        return_url: 'https://yourapp.com/payment-success',
-        "customization[title]": "Payment for Connects",
-        "customization[description]": description,
-        "meta[hide_receipt]": "true"
-      },
-      { 
-        headers: { Authorization: `Bearer ${CHAPA_SECRET_KEY}` } 
-      }
-    );
-
-    console.log(chapaResponse.data);
-    res.json(chapaResponse.data);
-  } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
-    res.status(500).json({ message: 'Payment failed', error: error.response?.data || error.message });
+// Setup Socket.IO with CORS options
+const ios = new Server(server, {
+  cors: {
+    origin: "http://localhost:8081",  // Your frontend origin here
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   }
 });
 
-app.get('/chapa-redirect', (req, res) => {
-    console.log("Chapa request received");
-
-    try {
-        const status = req.query.status;
-          if (status === 'success') {
-            res.redirect('adtera://payment-success');
-          } else {
-            res.redirect('adtera://payment-failed');
-          }
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "Internal Server Error" });
-    }
+// Middleware to attach Socket.IO instance to req object
+app.use((req, res, next) => {
+  req.io = ios;
+  next();
 });
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`server app listening on port ${port}`)
-})
+// Enable CORS for all routes and handle credentials
+app.use(cors({
+  origin: "http://localhost:8081",
+  credentials: true
+}));
+
+// Handle preflight OPTIONS requests for all routes
+app.options('*', cors());
+
+// Parse JSON request bodies
+app.use(express.json());
+
+// Parse cookies from requests
+app.use(cookieParser());
+
+// Define your routes
+app.use('/api/auth', authRoutes);
+
+// Optional: Socket.IO event handling
+// ios.on('connection', (socket) => {
+//   console.log('Client connected:', socket.id);
+//   socket.on('disconnect', () => {
+//     console.log('Client disconnected:', socket.id);
+//   });
+// });
+
+// Start server
+server.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
