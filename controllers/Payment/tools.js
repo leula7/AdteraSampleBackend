@@ -1,6 +1,6 @@
 
 import crypto from "crypto";
-import config from "./config.js";
+import config from "./Config.js";
 import { KJUR, hextob64 } from "jsrsasign";
 
 
