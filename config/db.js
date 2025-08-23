@@ -6,15 +6,14 @@ dotenv.config();
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
-  process.env.DB_PASS, // Changed from DB_PASS to DB_PASSWORD for consistency
+  process.env.DB_PASS,
   {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     port: process.env.DB_PORT,
-    // Recommended additional options:
     define: {
-      timestamps: false, // Disable automatic timestamp fields
-      freezeTableName: true // Prevent pluralization of table names
+      timestamps: false,
+      freezeTableName: true
     },
     pool: {
       max: 5,
@@ -22,12 +21,16 @@ const sequelize = new Sequelize(
       acquire: 30000,
       idle: 10000
     },
+    dialectOptions: {
+      connectTimeout: 30000 // 30 seconds
+    },
     logging: process.env.NODE_ENV === 'development' ? console.log : false
   }
 );
 
 // Test the database connection
 try {
+  console.log("connecting with db....");
   await sequelize.authenticate();
   console.log('Database connection has been established successfully.');
 } catch (error) {
