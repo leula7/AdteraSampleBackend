@@ -17,14 +17,19 @@ const initTransaction = (sequelize) => { // Consistent naming
       },
       comment: 'User associated with the transaction'
     },
-    job_id: {
+    connect_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'jobs',
-        key: 'job_id'
+        model: 'connects',
+        key: 'connect_id'
       },
-      comment: 'Job associated with the transaction'
+      comment: 'Connects associated with the transaction'
+    },
+    tx_ref: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      comment: 'transacation references'
     },
     amount: { // Added amount field
       type: DataTypes.DECIMAL(10, 2), // For monetary values
@@ -56,14 +61,9 @@ const initTransaction = (sequelize) => { // Consistent naming
       defaultValue: DataTypes.NOW,
       comment: 'Transaction timestamp'
     },
-    payment_method: { // Added payment method
-      type: DataTypes.STRING(50),
-      comment: 'Payment method used'
-    },
-    transaction_reference: { // Added reference ID
-      type: DataTypes.STRING(100),
-      unique: true,
-      comment: 'External transaction reference'
+    status: {
+      type: DataTypes.TEXT,
+      defaultValue: 'pending'
     }
   }, {
     tableName: 'transactions',
@@ -76,7 +76,7 @@ const initTransaction = (sequelize) => { // Consistent naming
         name: 'idx_transaction_user'
       },
       {
-        fields: ['job_id'],
+        fields: ['connect_id'],
         name: 'idx_transaction_job'
       },
       {

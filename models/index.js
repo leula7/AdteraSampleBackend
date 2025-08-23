@@ -126,8 +126,8 @@ BorrowedConnect.belongsTo(Job, { foreignKey: 'job_id' });
 Job.hasMany(Rate, { foreignKey: 'job_id' });
 Rate.belongsTo(Job, { foreignKey: 'job_id' });
 
-Job.hasMany(Transaction, { foreignKey: 'job_id' });
-Transaction.belongsTo(Job, { foreignKey: 'job_id' });
+Connect.hasMany(Transaction, { foreignKey: 'connect_id' });
+Transaction.belongsTo(Job, { foreignKey: 'connect_id' });
 
 // Export all models individually
 export {

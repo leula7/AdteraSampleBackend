@@ -36,8 +36,8 @@ const authController = {
       }
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
-        console.log("User already exists: ", email);
-         res.status(409).json({ message: 'User already.' });
+        console.log("User already register with this email: ", email);
+         res.status(409).json({ message: 'User register with this email.' });
          return
       }
 
@@ -67,7 +67,12 @@ const authController = {
       res.status(201).json({ message: 'User registered successfully.' });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Internal server error.' });
+      if (err.message?.includes("Validation isEmail on email failed")){
+        res.status(500).json({ message: "Invalid Email Address" });
+
+      }else{
+          res.status(500).json({message: err.message || "unabled to find Error" });
+      }
     }
   },
 
@@ -112,17 +117,17 @@ const authController = {
       //   return res.status(401).json({ message: 'Token has been blacklisted. Please re-authenticate.' });
       // }
 
-      res.cookie('refreshToken', refreshToken, { 
-        httpOnly: true,
-        secure: false,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: 'None' // Or 'None' if cross-origin
-      });
+      // res.cookie('refreshToken', refreshToken, { 
+      //   httpOnly: true,
+      //   secure: false,
+      //   maxAge: 7 * 24 * 60 * 60 * 1000,
+      //   sameSite: 'None' // Or 'None' if cross-origin
+      // });
 
-      console.log("get header cooke: ",res.getHeaders())
+      // console.log("get header cooke: ",res.getHeaders())
       
-      const refreshTokens = req.cookies;
-      console.log("refresh tokenL: ",refreshTokens)
+      // const refreshTokens = req.cookies;
+      console.log("refresh tokenL: ",token)
 
       res.json({ message: 'Login successful.',username: user.username, token, userType: userType.user_type, user_id: user.user_id });
     } catch (err) {

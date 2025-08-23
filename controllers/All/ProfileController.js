@@ -1,4 +1,5 @@
-import { Rate, User, UserType, SocialMedia, Achievement, Experience, Skill, Followers, Job } from '../../models/index.js';
+import { col, fn } from 'sequelize';
+import { Rate, User, UserType, SocialMedia, Achievement, Experience, Skill, Followers, Job, BorrowedConnect, MyJob } from '../../models/index.js';
 import {sequelize} from '../../models/index.js'; // Add SocialMedia model
 
 const ProfileController = async (req, res) => {
@@ -6,10 +7,11 @@ const ProfileController = async (req, res) => {
     const { user_id } = req.user;
     var id = user_id
     const filter = JSON.parse(req.query.filter || '{}');
-    const { basic, rating, social, achievements, experience, skills, user_ids,follower, count_job } = filter;
+    const { basic, rating, social, achievements, experience, skills, user_ids,
+            follower, count_job,borrowed_connect,count_my_job,job_id } = filter;
     const attributeFields = basic ? Object.keys(basic) : undefined;
-    console.log("filter: ", basic);
-
+    console.log("filter: ", filter);
+    
     if(user_ids){
       id = user_ids;
       console.log("other user id: ",id)
@@ -24,7 +26,7 @@ const ProfileController = async (req, res) => {
       include: {
         model: UserType,
         attributes: ['user_type'],
-      },
+    },
       raw: true,
       nest: true
     });
@@ -36,7 +38,13 @@ const ProfileController = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
-
+    //Fetch Borrowed Connect Value
+    if(borrowed_connect){
+      var borrowed_connects = await BorrowedConnect.findOne({
+      where: { borrowed_user_id: user_id },
+      attributes: [[fn('SUM', col('borrowed_val')), 'borrowed_val']]
+    });
+    }
     // Fetch the user's rating
     if(rating){
       var rate = await Rate.findOne({
@@ -100,6 +108,16 @@ const ProfileController = async (req, res) => {
     }else{
       console.log("not found");
     }
+
+    if(count_my_job && job_id){
+      console.log("counting the applicants")
+      var applicant_number = await MyJob.count({
+        where: {
+          job_id
+        }
+      })
+    }
+
     const formattedUser = {
       ...user,
       rate: rate ? parseFloat(rate.rate).toFixed(3) : null,
@@ -110,6 +128,8 @@ const ProfileController = async (req, res) => {
       experienceVideos: ExperienceViedo,
       skills: Skills,
        job_count,
+       borrowed_connects,
+       applicant_number
     };
     res.status(200).json(formattedUser);
   } catch (err) {

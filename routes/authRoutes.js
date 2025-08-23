@@ -34,6 +34,8 @@ import paymanetResponse from '../controllers/Payment/Chapa/test.js';
 import FavoriteController from '../controllers/All/FavoriteController.js';
 import { EmailVerificationController, forgetpass, ForgetPassVerificationController, getSececretCode } from '../controllers/All/emailVerificationController.js';
 import { changeForgetPassword, changePassword } from '../controllers/All/PasswordController.js';
+import PaywithChapa from '../controllers/Payment/Chapa/PaywithChapaController.js';
+import verifyChapaPayment from '../controllers/Payment/Chapa/verifyChapaPayment.js';
 
 
 const router = express.Router();
@@ -49,6 +51,8 @@ router.get('/connects', authenticateUser, ConnectController);
 router.post('/feedback', authenticateUser, FeedBackController);
 router.post('/report', authenticateUser, ReportController);
 router.post('/paywithtelebirr', authenticateUser, PayWithTeleBirrController);
+router.post('/paywithchapa', authenticateUser, PaywithChapa);
+router.post('/verifychapapayment', verifyChapaPayment);
 router.get('/jobstatus', authenticateUser, getJobStatus); // Get all jobs - Only influencers
 
 

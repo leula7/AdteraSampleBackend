@@ -29,26 +29,13 @@ const initBorrowedConnect = (sequelize) => { // Consistent naming convention
     borrowed_val: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        min: 1 // Changed from 0 to 1 since you can't borrow 0 connects
-      },
       comment: 'Number of connects borrowed'
     },
-    borrowed_at: { // Added timestamp
+    created_at: { // Added timestamp
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       comment: 'When the connects were borrowed'
     },
-    repayment_due_date: { // Added repayment tracking
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-      comment: 'Optional due date for connect repayment'
-    },
-    is_repaid: { // Added repayment status
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      comment: 'Whether the connects have been repaid'
-    }
   }, {
     tableName: 'borrowed_connects',
     timestamps: false, // Disable automatic timestamps
