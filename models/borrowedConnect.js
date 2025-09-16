@@ -26,6 +26,11 @@ const initBorrowedConnect = (sequelize) => { // Consistent naming convention
       },
       comment: 'Job associated with the borrowed connects'
     },
+    original_required_connect: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      comment: 'Number of connects borrowed'
+    },
     borrowed_val: {
       type: DataTypes.INTEGER,
       allowNull: false,

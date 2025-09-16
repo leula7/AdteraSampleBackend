@@ -183,10 +183,13 @@ const updateProfile = async (req, res) => {
   try {
     const { user_id } = req.user;
     const { username,first_name,last_name,dob, phone_number,profile_picture, location, bio, base_price,email } = req.body;
-    console.log("req.body", req.body);
-    // Update user profile
+    var imageBuffer = null;
+    if(profile_picture){
+      const base64String = profile_picture.replace(/^data:image\/\w+;base64,/, '');
+      imageBuffer = Buffer.from(base64String, 'base64');
+    }
     const updatedUser = await User.update(
-      { username,first_name,last_name,dob, phone_number,profile_picture, location, bio,base_price,email },
+      { username,first_name,last_name,dob, phone_number,profile_picture: imageBuffer, location, bio,base_price,email },
       { where: { user_id } }
     );
 
@@ -242,7 +245,6 @@ const deleteSocialMedia = async (req, res) => {
 
 const updateAchievements = async (req, res) => {
   try {
-    console.log("req.body", req.body);
     const { user_id } = req.user;
     const { achievement, achievement_id } = req.body;
 

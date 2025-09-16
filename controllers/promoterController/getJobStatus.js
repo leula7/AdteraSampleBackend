@@ -14,12 +14,14 @@ const getJobStatus = async (req, res) => {
       },
       include: [{
         model: Job,
-        attributes: ['user_id', 'title', 'job_description','job_price','required_connect','job_created_date'],
+        attributes: ['user_id', 'title', 'job_description','job_price','required_connect','job_created_date','is_premium'],
         required: true
       }],
       limit: parseInt(limit),
-      offset: parseInt(offset)
+      offset: parseInt(offset),
+      order: [['applied_at', 'DESC']],
     });
+    
     var transformedJobs = [];
      transformedJobs = await Promise.all(jobs.map(async (job) => {
       const baseData = {
@@ -31,6 +33,7 @@ const getJobStatus = async (req, res) => {
         description: job.Job.job_description,
         creator_id: job.Job.user_id,
         job_created_date: job.Job.job_created_date,
+        is_premium: job.Job.is_premium,
       };
 
       // Only fetch count_unread if status is "approve"

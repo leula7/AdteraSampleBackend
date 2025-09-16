@@ -1,42 +1,44 @@
 
 import  sequelize from "../../config/db.js";
-import { Chat } from "../../models/index.js";
+import { Chat,Rate } from "../../models/index.js";
 
 const getAcceptedApplicants = async (req, res) => {
   try {
-    const { user_id,user_type } = req.user;
-    const { status,jobId, limit, offset } = req.query;
+    const { user_id, user_type } = req.user;
+    const { status, jobId, limit, offset } = req.query;
 
     if (user_type !== 'promoter') {
-      return res.status(403).json({ message: 'Access denied. Only Promoters can view all thier Accepted Applicants.' });
+      return res.status(403).json({
+        message: 'Access denied. Only Promoters can view all their Accepted Applicants.'
+      });
     }
 
-    const results = await sequelize.query(`SELECT 
-                    jobs.user_id,
-                    jobs.job_id,
-                    jobs.*,
-                    my_job_id,
-                    my_jobs.status AS applicant_job_status,
-                    applicant.email AS applicant_email,
-                    applicant.phone_number as applicant_phone_number,
-                    applicant.username AS applicant_username,
-                    applicant.bio AS bio,
-                    applicant.user_id AS applicant_user_id
-                    FROM 
-                        jobs
-                    JOIN 
-                        my_jobs ON jobs.job_id = my_jobs.job_id  -- matching job with applicant
-                    JOIN 
-                        users AS applicant ON my_jobs.user_id = applicant.user_id
-                        WHERE jobs.user_id = ? and jobs.job_id = ? and my_jobs.status = ?`,
-                    {
-                        replacements: [user_id,jobId,status],
-                        type: sequelize.QueryTypes.SELECT
-                    });
+    // Fetch jobs with applicants
+    const results = await sequelize.query(
+      `SELECT 
+          jobs.user_id,
+          jobs.job_id,
+          jobs.*,
+          my_job_id,
+          my_jobs.status AS applicant_job_status,
+          applicant.email AS applicant_email,
+          applicant.phone_number as applicant_phone_number,
+          applicant.username AS applicant_username,
+          applicant.bio AS bio,
+          applicant.user_id AS applicant_user_id
+       FROM jobs
+       JOIN my_jobs ON jobs.job_id = my_jobs.job_id
+       JOIN users AS applicant ON my_jobs.user_id = applicant.user_id
+       WHERE jobs.user_id = ? AND jobs.job_id = ? AND my_jobs.status = ?`,
+      {
+        replacements: [user_id, jobId, status],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
-    const transformedJobs = await Promise.all(results.map(async (result) => {
-      
-      const baseData = {
+    const transformedJobs = await Promise.all(
+      results.map(async (result) => {
+        const baseData = {
           applicant_email: result.applicant_email,
           applicant_job_status: result.applicant_job_status,
           applicant_phone_number: result.applicant_phone_number,
@@ -52,32 +54,56 @@ const getAcceptedApplicants = async (req, res) => {
           required_connect: result.required_connect,
           status: result.status,
           title: result.title,
-          user_id: result.user_id
-      };
+          user_id: result.user_id,
+        };
 
-      
-
+        // Count unread chats
         const [countResult] = await Chat.sequelize.query(
-          `SELECT COUNT(*) as count FROM chats c 
-           WHERE (c.reciver_id = ?) 
-           AND c.job_id = ? AND sender_id = ?  AND c.status = ?`,
+          `SELECT COUNT(*) as count 
+           FROM chats c 
+           WHERE c.reciver_id = ? 
+             AND c.job_id = ? 
+             AND c.sender_id = ?  
+             AND c.status = ?`,
           {
-            replacements: [result.user_id, result.job_id,result.applicant_user_id, "unread"],
+            replacements: [
+              result.user_id,
+              result.job_id,
+              result.applicant_user_id,
+              "unread"
+            ],
             type: Chat.sequelize.QueryTypes.SELECT,
           }
         );
         baseData.count_unread = parseInt(countResult.count) || 0;
-     console.log("countResult",countResult);
 
+        // Check if user already rated this closed job
+        if (status === "closed") {
+          const didIrateResults = await Rate.sequelize.query(
+            `SELECT 1 FROM rates r 
+             WHERE r.job_id = ? AND r.rated_by_user_id = ? AND r.rated_user_id = ?
+             LIMIT 1`,
+            {
+              replacements: [result.job_id, user_id, result.applicant_user_id],
+              type: Rate.sequelize.QueryTypes.SELECT,
+            }
+          );
+          baseData.iRateThisJob = didIrateResults.length > 0;
+        } else {
+          baseData.iRateThisJob = false;
+        }
 
-      return baseData;
-    }));
+        return baseData;
+      })
+    );
 
-    
     res.status(200).json(transformedJobs);
+
   } catch (err) {
-    res.status(500).json({ message: 'Internal server error while fetching feedbacks.' });
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error while fetching applicants.' });
   }
 };
+
 
 export default getAcceptedApplicants;

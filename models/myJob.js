@@ -37,7 +37,7 @@ const initMyJob = (sequelize) => { // Consistent initialization naming
       defaultValue: 'pending',
       comment: 'Current status of the job assignment'
     },
-    assigned_at: { // Added timestamp for tracking
+    applied_at: { // Added timestamp for tracking
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       comment: 'When the job was assigned to the user'

@@ -4,7 +4,6 @@ const FeedBackController = async (req, res) => {
     try {
         const user_id = req.user.user_id;
         const feedbackData = req.body;
-
         // Merge user_id with feedback fields
         const data = { user_id, ...feedbackData };
 

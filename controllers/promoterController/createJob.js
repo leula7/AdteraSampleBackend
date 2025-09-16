@@ -1,4 +1,4 @@
-import { Job } from '../../models/index.js'; // Assuming you have the models for User and Job
+import { Job, User } from '../../models/index.js'; // Assuming you have the models for User and Job
 import { findPrices } from '../All/additionalFunctions.js';
 
 const CreateJob = async (req, res) => {
@@ -15,11 +15,45 @@ const CreateJob = async (req, res) => {
          if (user_type !== 'promoter') {
             return res.status(403).json({ message: 'Access denied. Only companies can view create jobs.' });
         }
+        if(NewJob.is_premium){
+           const updateConnect = await User.increment(
+            { connect_val: -20 },
+            { where: { user_id } });
+            
+            if(updateConnect[1] >0){
+               return res.status(201).json({ message: 'Job created faild.'});
+            }
+        }
         const create = await Job.create(formatedJob);
         res.status(201).json({ message: 'Job created successfully.'});
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to create Apply. Internal server error.' });
+    }
+};
+
+const DeleteJob = async (req, res) => {
+    try {
+        const {user_id,user_type} = req.user;
+        const { job_id } = req.body;
+            if (user_type !== 'promoter') {
+            return res.status(403).json({ message: 'Access denied. Only companies can delete jobs.' });
+        }
+        const [deletedCount] = await Job.update(
+            { status: "deleted" }, // values to update
+            { where: { job_id, user_id } } // options
+            );
+
+            if (deletedCount === 0) {
+            return res
+                .status(404)
+                .json({ message: "Job not found or already deleted." });
+            }
+        res.status(200).json({ message: 'Job deleted successfully.' });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to delete Job. Internal server error.' });
     }
 };
 
@@ -34,4 +68,4 @@ const getJobPrice = async (req, res) => {
     }
 };
 
-export {CreateJob, getJobPrice};
+export {CreateJob, getJobPrice,DeleteJob};

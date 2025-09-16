@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize'; // Correct import
+import { DataTypes } from 'sequelize';
 
-const initChat = (sequelize) => { // Consistent naming
+const initChat = (sequelize) => {
   return sequelize.define('Chat', {
     chat_id: {
-      type: DataTypes.INTEGER, // Removed (11)
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       comment: 'Primary key for chat messages'
@@ -11,38 +11,39 @@ const initChat = (sequelize) => { // Consistent naming
     sender_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      },
+      references: { model: 'users', key: 'user_id' },
       comment: 'User who sent the message'
     },
-    reciver_id: { // Fixed spelling from 'reciver_i'
+    reciver_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      },
+      references: { model: 'users', key: 'user_id' },
       comment: 'User who received the message'
     },
+    job_id: { // Only for job reference
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: 'jobs', key: 'job_id' },
+      comment: 'Job related to the message'
+    },
+    engage_id: { // Added engage_id correctly
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: 'engage', key: 'engage_id' },
+      comment: 'Engage related to the message'
+    },
     message: {
-      type: DataTypes.TEXT, // Changed from STRING(255) to TEXT
+      type: DataTypes.TEXT,
       allowNull: false,
       comment: 'Message content'
     },
     status: {
-      type: DataTypes.ENUM( // Changed to ENUM for better integrity
-        'unread',
-        'read',
-        'delivered',
-        'deleted'
-      ),
+      type: DataTypes.ENUM('unread', 'read'),
       allowNull: false,
       defaultValue: 'unread',
       comment: 'Message status'
     },
-    created_at: { // Added timestamp
+    created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       comment: 'When message was sent'
@@ -50,24 +51,15 @@ const initChat = (sequelize) => { // Consistent naming
   }, {
     tableName: 'chats',
     timestamps: false,
-    freezeTableName: true, // Prevent pluralization
-    underscored: true, // Consistent naming
+    freezeTableName: true,
+    underscored: true,
     indexes: [
-      {
-        fields: ['sender_id'],
-        name: 'idx_chat_sender'
-      },
-      {
-        fields: ['receiver_id'],
-        name: 'idx_chat_receiver'
-      },
-      {
-        fields: ['status'],
-        name: 'idx_chat_status'
-      }
+      { fields: ['sender_id'], name: 'idx_chat_sender' },
+      { fields: ['reciver_id'], name: 'idx_chat_receiver' },
+      { fields: ['status'], name: 'idx_chat_status' }
     ],
     comment: 'Table storing chat messages between users'
   });
 };
 
-export default initChat; // Consistent export
+export default initChat;

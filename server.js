@@ -4,6 +4,8 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
+import { rateLimit } from 'express-rate-limit'
+
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +20,9 @@ const corsOptions = {
       'https://g1682vd4-8081.uks1.devtunnels.ms',
       'https://36b1d44ff578.ngrok-free.app',
       'http://localhost:8081',
+      'http://192.168.1.9:8081',
       'http://localhost:3000',
+      'http://127.0.0.1:8081',
       'http://localhost:19006', // Expo dev server
       'http://localhost:19000',
       'http://localhost:19001',
@@ -47,6 +51,22 @@ const ios = new Server(server, {
   cors: corsOptions
 });
 
+
+const limiter = rateLimit({
+	windowMs: 1 * 60 * 1000, // 15 minutes
+	limit: 1, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+	standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+	ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
+	// store: ... , // Redis, Memcached, etc. See below.
+    handler: (req, res) => {
+    res.status(429).send('Too many requests, please try again later.');
+  },
+})
+
+// Apply the rate limiting middleware to all requests.
+//app.use(limiter)
+
 // Apply CORS middleware
 app.use(cors(corsOptions));
 
@@ -59,7 +79,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Parse JSON request bodies
+// Parse JSON request bodiess
 app.use(express.json({ limit: '10mb' }));
 
 // Parse URL-encoded bodies

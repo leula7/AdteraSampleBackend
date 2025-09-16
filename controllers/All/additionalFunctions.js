@@ -75,14 +75,17 @@ export const userNameexist = async (req,res) => {
 
 
   
-export const sendEmail = async (to, subject, title = "Email Verification", code) => {
-
+export const sendEmail = async (to, subject, code) => {
+  console.log("Sending email to:", to);
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: "leulkahssaye1000@gmail.com",
       pass: "csujqjgvhpcwkvnm"
-    }
+    },
+     tls: {
+    rejectUnauthorized: false // <--- ADD THIS
+  }
   });
 
   const mailOptions = {

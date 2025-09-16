@@ -41,9 +41,6 @@ const PaywithChapa = async (req, res) => {
 
     const tx_ref = `${user_id}-${newval}-${Date.now()}-${user_type}`;
 
-    console.log("data: ",tx_ref)
-    console.log("data: ",newval)
-
     const payload = {
         amount: amount.toString(),
         currency: "ETB",

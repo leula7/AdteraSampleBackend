@@ -61,7 +61,7 @@ const initUser = (sequelize) => {
       allowNull: false
     },
     profile_picture: {
-      type: DataTypes.BLOB,
+      type: DataTypes.BLOB('long'),
       allowNull: true
     },
     password: {

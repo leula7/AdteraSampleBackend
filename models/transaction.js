@@ -24,47 +24,30 @@ const initTransaction = (sequelize) => { // Consistent naming
         model: 'connects',
         key: 'connect_id'
       },
-      comment: 'Connects associated with the transaction'
+      comment: 'Connect associated with the transaction'
     },
-    tx_ref: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-      comment: 'transacation references'
+    tx_ref: { // Added payment method
+      type: DataTypes.STRING(50),
+      comment: 'Payment method used'
     },
-    amount: { // Added amount field
-      type: DataTypes.DECIMAL(10, 2), // For monetary values
-      allowNull: false,
-      comment: 'Transaction amount'
+    transaction_type: { // Added payment method
+      type: DataTypes.STRING(50),
+      comment: 'Payment method used'
     },
-    transaction_type: { // Added type field
-      type: DataTypes.ENUM(
-        'payment',
-        'refund',
-        'withdrawal',
-        'deposit'
-      ),
-      allowNull: false,
-      comment: 'Type of transaction'
+    amount: { // Added payment method
+      type: DataTypes.STRING(50),
+      comment: 'Payment amount'
     },
-    status: { // Added status field
-      type: DataTypes.ENUM(
-        'pending',
-        'completed',
-        'failed',
-        'cancelled'
-      ),
-      defaultValue: 'pending',
-      comment: 'Transaction status'
-    },
-    date: {
+     date: {
       type: DataTypes.DATE, // Changed from DATEONLY to DATE
       defaultValue: DataTypes.NOW,
       comment: 'Transaction timestamp'
     },
-    status: {
-      type: DataTypes.TEXT,
-      defaultValue: 'pending'
-    }
+     status: {
+      type: DataTypes.STRING(30), // Changed from DATEONLY to DATE
+      defaultValue: "pending",
+      comment: 'Transaction status'
+    },
   }, {
     tableName: 'transactions',
     timestamps: false,
@@ -76,16 +59,8 @@ const initTransaction = (sequelize) => { // Consistent naming
         name: 'idx_transaction_user'
       },
       {
-        fields: ['connect_id'],
-        name: 'idx_transaction_job'
-      },
-      {
         fields: ['date'],
         name: 'idx_transaction_date'
-      },
-      {
-        fields: ['status'],
-        name: 'idx_transaction_status'
       }
     ],
     comment: 'Table storing financial transactions'

@@ -9,12 +9,13 @@ const createConnect = async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Only Admin can create connect packages.' });
     }
 
-    const { title, description, connect_value } = req.body;
+    const { title, description, connect_value,connect_price } = req.body;
     
     const newConnect = await Connect.create({
       title,
       description,
       connect_value,
+      connect_price,
       user_id: req.user.user_id // Assuming the admin's user_id is stored in req.user
     });
 
@@ -36,11 +37,12 @@ const updateConnect = async (req, res) => {
     }
 
     console.log("req.body: ",req.body);
-    const { connect_id,title, description, connect_value } = req.body;
+    const { connect_id,title, description, connect_value , connect_price} = req.body;
     
     const [updated] = await Connect.update({
       title,
       description,
+      connect_price,
       connect_value
     }, {
       where: { connect_id }

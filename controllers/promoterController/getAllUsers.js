@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import { User, Rate, UserType } from '../../models/index.js';
+import { User, Rate, UserType, EngageUsers } from '../../models/index.js';
 
 const getAllUsers = async (req, res) => {
   try {
@@ -12,8 +12,19 @@ const getAllUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
 
-    // Get users with average rating using Sequelize include
+    // get all engaged user IDs by this promoter
+    const engagedUsers = await EngageUsers.findAll({
+      where: { engager_user_id: user_id },
+      attributes: ["engaged_user_id"],
+      raw: true,
+    });
+    const engagedIds = engagedUsers.map(u => u.engaged_user_id);
+
+    // find influencers excluding those already engaged
     const influencers = await User.findAll({
+      where: {
+        user_id: { [Sequelize.Op.notIn]: engagedIds }
+      },
       attributes: {
         exclude: ['password'],
         include: [
@@ -23,15 +34,15 @@ const getAllUsers = async (req, res) => {
       include: [
         {
           model: Rate,
-          as: 'ReceivedRatings', // must match the alias defined above
+          as: 'ReceivedRatings',
           attributes: []
         },
-         {
-            model: UserType,
-            as: 'UserType',        // your UserType alias for the relation
-            attributes: [],
-            where: { user_type: 'influencer' }  // filter by influencer type here
-          }
+        {
+          model: UserType,
+          as: 'UserType',
+          attributes: [],
+          where: { user_type: 'influencer' }
+        }
       ],
       group: ['User.user_id'],
       limit,
@@ -39,14 +50,16 @@ const getAllUsers = async (req, res) => {
       subQuery: false
     });
 
-
-    // Format rate to 2 decimal places
+    // format rate
     const formattedInfluencers = influencers.map(user => ({
       ...user.get(),
-      rate: user.get('rate') ? parseFloat(user.get('rate')).toFixed(2) : '0.00'
+      rate: user.get('rate')
+        ? parseFloat(user.get('rate')).toFixed(2)
+        : '0.00'
     }));
 
     res.status(200).json(formattedInfluencers);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error.' });

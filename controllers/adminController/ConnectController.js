@@ -2,7 +2,8 @@ import { Connect } from '../../models/index.js'; // Assuming you have a Job mode
 
 const ConnectController = async (req, res) => {
   try {
-    const limit = req.query.limit || 10; // Optional query param
+    console.log('Fetching all connect packages');
+    const limit = 50; // Optional query param
     const offset = req.query.offset; // Get offset from request parameters
     const connect = await Connect.findAll({limit: parseInt(limit), offset: parseInt(offset)}); // Adjust the limit and offset as needed
 

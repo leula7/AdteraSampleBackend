@@ -46,6 +46,11 @@ const initJob = (sequelize) => {  // Renamed to initJob for consistency
       type: DataTypes.DATEONLY,
       defaultValue: DataTypes.NOW
     },
+     is_premium:{
+      type: DataTypes.TEXT,  // Changed from STRING(255) to TEXT for longer descriptions
+      allowNull: false,
+      defaultValue: false
+    },
     status:{
       type: DataTypes.TEXT,  // Changed from STRING(255) to TEXT for longer descriptions
       allowNull: false

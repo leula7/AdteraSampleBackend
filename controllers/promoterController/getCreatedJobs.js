@@ -1,5 +1,5 @@
 
-import  sequelize from "../../config/db.js";
+import { Op } from "sequelize";
 import { Job } from "../../models/index.js";
 
 const getCreatedJobs = async (req, res) => {
@@ -14,6 +14,7 @@ const getCreatedJobs = async (req, res) => {
     const results = await Job.findAll({
         where: {
           user_id: user_id,
+          status: { [Op.not]: "deleted" }
         },
         limit: parseInt(limit),
         offset: parseInt(offset),

@@ -23,7 +23,7 @@ const initFeedback = (sequelize) => {
       comment: 'The feedback content',
       validate: {
         notEmpty: true // Ensures feedback isn't empty
-      }
+      },
     },
     created_at: { // Added creation timestamp
       type: DataTypes.DATE,

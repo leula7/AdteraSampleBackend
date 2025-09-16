@@ -9,7 +9,7 @@ const getAllJobs = async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
 
     if (user_type !== 'influencer') {
-      return res.status(403).json({ message: 'Access denied. Only companies can view all jobs.' });
+      return res.status(403).json({ message: 'Access denied. Only Influencers can view all jobs.' });
     }
 
     const assignedJobIds = await MyJob.findAll({
@@ -28,7 +28,10 @@ const getAllJobs = async (req, res) => {
       },
       limit,
       offset,
-      order: [['job_created_date', 'DESC']],
+      order: [
+          ['is_premium', 'DESC'],
+          ['job_created_date', 'DESC']
+        ],
     });
 
     const jobsEnriched = await Promise.all(

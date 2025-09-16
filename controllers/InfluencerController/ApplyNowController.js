@@ -1,11 +1,15 @@
 import { col, fn, where } from 'sequelize';
 import sequelize from "../../config/db.js";
-import { MyJob, User, Job, BorrowedConnect } from '../../models/index.js'; // Assuming you have the models for User and Job
+import { MyJob, User, Job, BorrowedConnect, UserType } from '../../models/index.js'; // Assuming you have the models for User and Job
 
 const ApplyNowController = async (req, res) => {
     try {
-        console.log("am i applying")
-        const user_id = req.user.user_id;
+        console.log("am i applying ",req.body.applyData)
+        const {user_id,user_type} = req.user;
+        console.log("type: ",user_type)
+        if(user_type !== 'influencer'){
+            return res.status(403).json({ message: 'Forbidden: Only influencers can apply for jobs.' });
+        }
         const { job_id, status,applyWithBorrow } = req.body.applyData;
         const existingApplication = await MyJob.findOne({ where: { user_id, job_id } });
         const serviceFee = 5;
@@ -41,16 +45,14 @@ const ApplyNowController = async (req, res) => {
         if (connect_val < required_connect) {
             if (applyWithBorrow) {
             apply = await MyJob.create(data, { transaction: t });
-            console.log("sumation: ",Number(borrowed_val.borrowed_val)+Number(required_connect)+serviceFee)
+
             if(Number(borrowed_val.borrowed_val)+Number(required_connect)+serviceFee > 300 ){
                 return res.status(400).json({ message: 'You have reached maximum borrowed Connect' });
             }
             await BorrowedConnect.create(
-                {
-                borrowed_user_id: user_id,
-                job_id,
-                borrowed_val: required_connect + serviceFee
-                },
+                {   borrowed_user_id: user_id,
+                    original_required_connect: required_connect,
+                    job_id,borrowed_val: required_connect + serviceFee},
                 { transaction: t } // ✅ include transaction here too
             );
             } else {

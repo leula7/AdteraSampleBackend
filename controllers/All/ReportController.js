@@ -6,16 +6,20 @@ const ReportController = async (req, res) => {
         const {detail,reported_user_id,job_id,report_type} = req.body.report;
         const formatedReportData = {detail,reported_user_id,job_id,report_type, reporter_id: user_id};
         const report = await Report.create(formatedReportData);
-        
+        var countReport = 0;
         if(report === null) {
             return res.status(400).json({ message: 'Failed to create Report. Invalid data.' });
         }
 
-        const countReport = await Report.count({
-            where: {
-                job_id: job_id,
-            }
-        });
+
+
+        if(job_id){
+             countReport = await Report.count({
+                where: {
+                    job_id: job_id,
+                }
+            });
+        }
 
         if(countReport > 3){
             var InActiveJob = await Job.update(
